@@ -1,0 +1,120 @@
+---
+import Container from '../ui/Container.astro';
+import Button from '../ui/Button.astro';
+import Badge from '../ui/Badge.astro';
+
+import { getCurrentLocale } from '../../i18n/utils';
+import { getSiteConfig } from '../../i18n/site';
+
+const currentLocale = getCurrentLocale(Astro.url.pathname);
+const siteConfig = getSiteConfig(currentLocale);
+
+const heroMetrics =
+  siteConfig.hero.metrics ?? [
+    {
+      value: '9+',
+      label: 'anos em dados',
+    },
+    {
+      value: 'BI',
+      label: 'end-to-end',
+    },
+    {
+      value: 'Cloud',
+      label: 'stack Azure',
+    },
+  ];
+
+const heroImageAlt =
+  siteConfig.hero.imageAlt ?? 'Foto profissional de Fred Vasconcelos';
+
+const heroProfileLine =
+  siteConfig.hero.profileLine ??
+  'Business Intelligence · Engenharia de Dados · Produtos Analíticos';
+---
+
+<section id="inicio" class="relative flex min-h-screen items-center overflow-hidden pb-24 pt-36">
+  <Container>
+    <div class="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
+      <div>
+        <div class="mb-6 flex flex-wrap gap-3">
+          <Badge variant="soft">
+            {siteConfig.hero.eyebrow}
+          </Badge>
+
+          <Badge variant="outline">
+            Power BI · Databricks · PySpark · SQL
+          </Badge>
+        </div>
+
+        <h1 class="max-w-4xl text-5xl font-bold tracking-tight text-white md:text-7xl">
+          {siteConfig.hero.title}
+        </h1>
+
+        <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+          {siteConfig.hero.description}
+        </p>
+
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+          <Button href={siteConfig.hero.primaryCta.href}>
+            {siteConfig.hero.primaryCta.label}
+          </Button>
+
+          <Button href={siteConfig.hero.secondaryCta.href} variant="secondary">
+            {siteConfig.hero.secondaryCta.label}
+          </Button>
+        </div>
+
+        <div class="mt-10 grid max-w-xl grid-cols-3 gap-4 border-t border-white/10 pt-8">
+          {
+            heroMetrics.map((metric) => (
+              <div>
+                <p class="text-2xl font-bold text-white">
+                  {metric.value}
+                </p>
+
+                <p class="mt-1 text-sm text-slate-400">
+                  {metric.label}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="relative mx-auto w-full max-w-md lg:ml-auto">
+        <div
+          aria-hidden="true"
+          class="absolute -inset-6 rounded-[3rem] bg-cyan-300/10 blur-3xl"
+        >
+        </div>
+
+        <div
+          class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-3 shadow-2xl shadow-slate-950/60 backdrop-blur"
+        >
+          <div class="overflow-hidden rounded-[1.5rem] bg-slate-900">
+            <img
+              src="/foto_fundo_branco.png"
+              alt={heroImageAlt}
+              class="aspect-[4/5] h-full w-full object-cover"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+
+          <div
+            class="absolute bottom-6 left-6 right-6 rounded-3xl border border-white/10 bg-slate-950/80 p-4 backdrop-blur-xl"
+          >
+            <p class="text-sm font-semibold text-white">
+              {siteConfig.name}
+            </p>
+
+            <p class="mt-1 text-xs leading-5 text-slate-400">
+              {heroProfileLine}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Container>
+</section>

@@ -1,0 +1,185 @@
+---
+import { languages, locales, type Locale } from '../../i18n/config';
+import { getCurrentLocale, getLocalizedPath } from '../../i18n/utils';
+
+const currentPath = Astro.url.pathname;
+const baseUrl = import.meta.env.BASE_URL;
+
+const currentLocale = getCurrentLocale(currentPath);
+
+const labels = {
+  'pt-BR': {
+    ariaLabel: 'Selecionar idioma',
+    current: 'atual',
+  },
+  es: {
+    ariaLabel: 'Seleccionar idioma',
+    current: 'actual',
+  },
+  en: {
+    ariaLabel: 'Select language',
+    current: 'current',
+  },
+} as const;
+
+const withBasePath = (path: string) => {
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const cleanPath = path.replace(/^\//, '');
+
+  return `${cleanBase}${cleanPath}`;
+};
+
+const languageOptions = locales.map((locale: Locale) => {
+  const language = languages[locale];
+
+  return {
+    ...language,
+    locale,
+    flag: withBasePath(language.flag),
+    href: withBasePath(getLocalizedPath(currentPath, locale)),
+  };
+});
+
+const activeLanguage =
+  languageOptions.find((language) => language.locale === currentLocale) ??
+  languageOptions[0];
+
+const currentLabels = labels[currentLocale];
+---
+
+<div class="relative" data-language-switcher>
+  <button
+    type="button"
+    class="inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-slate-950/30 px-3 text-sm font-semibold text-slate-200 backdrop-blur transition hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-100"
+    aria-label={currentLabels.ariaLabel}
+    aria-expanded="false"
+    data-language-button
+  >
+    <img
+      src={activeLanguage.flag}
+      alt=""
+      class="h-5 w-5 rounded-full object-cover ring-1 ring-white/20"
+      loading="eager"
+    />
+
+    <span class="hidden sm:inline">
+      {activeLanguage.shortLabel}
+    </span>
+
+    <svg
+      class="h-4 w-4 transition duration-200"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      data-language-icon
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </button>
+
+  <div
+    class="pointer-events-none absolute right-0 mt-3 w-56 translate-y-2 scale-95 opacity-0 transition duration-200"
+    data-language-menu
+  >
+    <div class="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
+      {
+        languageOptions.map((language) => {
+          const isActive = language.locale === currentLocale;
+
+          return (
+            <a
+              href={language.href}
+              class:list={[
+                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition',
+                isActive
+                  ? 'bg-cyan-300/12 text-cyan-100 ring-1 ring-cyan-300/25'
+                  : 'text-slate-300 hover:bg-white/10 hover:text-cyan-100',
+              ]}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <img
+                src={language.flag}
+                alt=""
+                class="h-5 w-5 rounded-full object-cover ring-1 ring-white/20"
+                loading="lazy"
+              />
+
+              <span>
+                {language.label}
+              </span>
+
+              {
+                isActive && (
+                  <span class="ml-auto text-xs text-cyan-200">
+                    {currentLabels.current}
+                  </span>
+                )
+              }
+            </a>
+          );
+        })
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  const switchers = document.querySelectorAll('[data-language-switcher]');
+
+  switchers.forEach((switcher) => {
+    const button = switcher.querySelector('[data-language-button]');
+    const menu = switcher.querySelector('[data-language-menu]');
+    const icon = switcher.querySelector('[data-language-icon]');
+
+    const closeMenu = () => {
+      button?.setAttribute('aria-expanded', 'false');
+
+      menu?.classList.add('pointer-events-none', 'translate-y-2', 'scale-95', 'opacity-0');
+      menu?.classList.remove('pointer-events-auto', 'translate-y-0', 'scale-100', 'opacity-100');
+
+      icon?.classList.remove('rotate-180');
+    };
+
+    const openMenu = () => {
+      button?.setAttribute('aria-expanded', 'true');
+
+      menu?.classList.remove('pointer-events-none', 'translate-y-2', 'scale-95', 'opacity-0');
+      menu?.classList.add('pointer-events-auto', 'translate-y-0', 'scale-100', 'opacity-100');
+
+      icon?.classList.add('rotate-180');
+    };
+
+    const toggleMenu = () => {
+      const isOpen = button?.getAttribute('aria-expanded') === 'true';
+
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    };
+
+    button?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleMenu();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!switcher.contains(event.target as Node)) {
+        closeMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+      }
+    });
+  });
+</script>

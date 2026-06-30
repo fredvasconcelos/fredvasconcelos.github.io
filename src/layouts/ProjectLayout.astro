@@ -1,0 +1,205 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import Container from '../components/ui/Container.astro';
+import Badge from '../components/ui/Badge.astro';
+
+import { getCurrentLocale } from '../i18n/utils';
+import { getSiteConfig } from '../i18n/site';
+
+interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  category: string;
+  stack: readonly string[];
+  image?: string;
+}
+
+const {
+  title,
+  description,
+  date,
+  category,
+  stack,
+  image,
+} = Astro.props;
+
+const currentLocale = getCurrentLocale(Astro.url.pathname);
+const siteConfig = getSiteConfig(currentLocale);
+const projectDetail = siteConfig.projectDetail;
+
+const formattedDate = new Intl.DateTimeFormat(projectDetail.dateLocale, {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+}).format(date);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={image ?? siteConfig.seo.defaultImage}
+>
+  <Header />
+
+  <main>
+    <section class="border-b border-white/10 pb-14 pt-36 md:pb-20">
+      <Container>
+        <a
+          href={projectDetail.backHref}
+          class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition hover:text-cyan-100"
+        >
+          <span>←</span>
+          {projectDetail.backLabel}
+        </a>
+
+        <div class="max-w-4xl">
+          <div class="mb-5 flex flex-wrap items-center gap-3">
+            <Badge variant="soft">
+              {category}
+            </Badge>
+
+            <span class="text-sm text-slate-500">
+              {formattedDate}
+            </span>
+          </div>
+
+          <h1 class="text-4xl font-bold tracking-tight text-white md:text-6xl">
+            {title}
+          </h1>
+
+          <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
+            {description}
+          </p>
+
+          <div class="mt-8 flex flex-wrap gap-2">
+            {
+              stack.map((item) => (
+                <Badge variant="outline">
+                  {item}
+                </Badge>
+              ))
+            }
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    {
+      image && (
+        <section class="border-b border-white/10 py-10">
+          <Container>
+            <div class="overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900 shadow-2xl shadow-slate-950/40">
+              <img
+                src={image}
+                alt={`${projectDetail.imageAltPrefix} ${title}`}
+                class="aspect-[16/7] w-full object-cover"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </Container>
+        </section>
+      )
+    }
+
+    <section class="py-16 md:py-24">
+      <Container>
+        <article class="project-content mx-auto max-w-3xl">
+          <slot />
+        </article>
+      </Container>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .project-content {
+    color: rgb(203, 213, 225);
+  }
+
+  .project-content :global(h2) {
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    color: white;
+    font-size: clamp(1.75rem, 2vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .project-content :global(h3) {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .project-content :global(p) {
+    margin-top: 1.25rem;
+    line-height: 1.9;
+  }
+
+  .project-content :global(ul),
+  .project-content :global(ol) {
+    margin-top: 1.25rem;
+    padding-left: 1.25rem;
+  }
+
+  .project-content :global(li) {
+    margin-top: 0.75rem;
+    line-height: 1.8;
+  }
+
+  .project-content :global(ul li::marker) {
+    color: rgb(34, 211, 238);
+  }
+
+  .project-content :global(strong) {
+    color: white;
+    font-weight: 700;
+  }
+
+  .project-content :global(code) {
+    border-radius: 0.5rem;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 0.15rem 0.35rem;
+    color: rgb(103, 232, 249);
+    font-size: 0.9em;
+  }
+
+  .project-content :global(pre) {
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(2, 6, 23, 0.95);
+    padding: 1.25rem;
+  }
+
+  .project-content :global(pre code) {
+    background: transparent;
+    padding: 0;
+    color: rgb(226, 232, 240);
+  }
+
+  .project-content :global(a) {
+    color: rgb(103, 232, 249);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(103, 232, 249, 0.35);
+    text-underline-offset: 4px;
+  }
+
+  .project-content :global(blockquote) {
+    margin-top: 1.5rem;
+    border-left: 3px solid rgb(34, 211, 238);
+    padding-left: 1rem;
+    color: rgb(226, 232, 240);
+    font-style: italic;
+  }
+</style>

@@ -1,0 +1,38 @@
+---
+import { getCollection, render } from 'astro:content';
+import ProjectLayout from '../../../layouts/ProjectLayout.astro';
+
+import {
+  getProjectSlugFromId,
+  projectBelongsToLocale,
+} from '../../../utils/projects';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ id, data }) => {
+    return projectBelongsToLocale(id, 'es') && data.draft !== true;
+  });
+
+  return projects.map((project) => {
+    const slug = getProjectSlugFromId(project.id);
+
+    return {
+      params: { slug },
+      props: { project },
+    };
+  });
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<ProjectLayout
+  title={project.data.title}
+  description={project.data.description}
+  date={project.data.date}
+  category={project.data.category}
+  stack={project.data.stack}
+  image={project.data.image}
+>
+  <Content />
+</ProjectLayout>

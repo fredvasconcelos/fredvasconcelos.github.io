@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/layout/Header.astro';
+import Footer from '../../components/layout/Footer.astro';
+
+import Hero from '../../components/home/Hero.astro';
+import About from '../../components/home/About.astro';
+import Technologies from '../../components/home/Technologies.astro';
+import ExperienceTimeline from '../../components/home/ExperienceTimeline.astro';
+import FeaturedProjects from '../../components/home/FeaturedProjects.astro';
+import ContactCTA from '../../components/home/ContactCTA.astro';
+
+import { getSiteConfig } from '../../i18n/site';
+
+const siteConfig = getSiteConfig('en');
+---
+
+<BaseLayout
+  title={siteConfig.seo.defaultTitle}
+  description={siteConfig.seo.defaultDescription}
+  image={siteConfig.seo.defaultImage}
+>
+  <Header />
+
+  <Hero />
+  <About />
+  <Technologies />
+  <ExperienceTimeline />
+  <FeaturedProjects />
+  <ContactCTA />
+
+  <Footer />
+</BaseLayout>

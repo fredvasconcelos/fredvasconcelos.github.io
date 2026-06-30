@@ -1,0 +1,83 @@
+---
+import { getCollection } from 'astro:content';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/layout/Header.astro';
+import Footer from '../../components/layout/Footer.astro';
+import Container from '../../components/ui/Container.astro';
+import SectionTitle from '../../components/ui/SectionTitle.astro';
+import ProjectCard from '../../components/projects/ProjectCard.astro';
+
+import { getSiteConfig } from '../../i18n/site';
+
+import {
+  getProjectHref,
+  getProjectSlugFromId,
+  projectBelongsToLocale,
+} from '../../utils/projects';
+
+const currentLocale = 'pt-BR';
+const siteConfig = getSiteConfig(currentLocale);
+const projectsPage = siteConfig.projectsPage;
+
+const projects = await getCollection('projects');
+
+const publishedProjects = projects
+  .filter((project) => projectBelongsToLocale(project.id, currentLocale))
+  .filter((project) => project.data.draft !== true)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout
+  title={projectsPage.title}
+  description={projectsPage.description}
+  image={siteConfig.seo.defaultImage}
+>
+  <Header />
+
+  <section class="relative min-h-screen border-t border-white/10 pb-24 pt-36 md:pb-32">
+    <Container>
+      <div class="mb-14">
+        <SectionTitle
+          eyebrow={projectsPage.eyebrow}
+          title={projectsPage.title}
+          description={projectsPage.description}
+        />
+      </div>
+
+      {
+        publishedProjects.length > 0 ? (
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {
+              publishedProjects.map((project) => {
+                const slug = getProjectSlugFromId(project.id);
+
+                return (
+                  <ProjectCard
+                    title={project.data.title}
+                    description={project.data.description}
+                    href={getProjectHref(slug, currentLocale)}
+                    category={project.data.category}
+                    stack={project.data.stack}
+                    date={project.data.date}
+                    image={project.data.image}
+                    locale={projectsPage.dateLocale}
+                    readMoreLabel={projectsPage.cardReadMoreLabel}
+                    imageAltPrefix={projectsPage.imageAltPrefix}
+                    fallbackLabel={projectsPage.fallbackLabel}
+                  />
+                );
+              })
+            }
+          </div>
+        ) : (
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-slate-300">
+            {projectsPage.emptyMessage}
+          </div>
+        )
+      }
+    </Container>
+  </section>
+
+  <Footer />
+</BaseLayout>

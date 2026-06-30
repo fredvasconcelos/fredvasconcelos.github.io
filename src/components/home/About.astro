@@ -1,0 +1,56 @@
+---
+import Container from '../ui/Container.astro';
+import SectionTitle from '../ui/SectionTitle.astro';
+
+import { getCurrentLocale } from '../../i18n/utils';
+import { getSiteConfig } from '../../i18n/site';
+
+const currentLocale = getCurrentLocale(Astro.url.pathname);
+const siteConfig = getSiteConfig(currentLocale);
+
+const about = siteConfig.about;
+---
+
+<section id="sobre" class="relative border-t border-white/10 py-24 md:py-32">
+  <Container>
+    <div class="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <div class="lg:sticky lg:top-28">
+        <SectionTitle
+          eyebrow={about.eyebrow}
+          title={about.title}
+          description={about.description}
+        />
+      </div>
+
+      <div class="space-y-8">
+        <div class="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-slate-950/30 backdrop-blur md:p-8">
+          <div class="space-y-6">
+            {
+              about.paragraphs.map((paragraph) => (
+                <p class="text-base leading-8 text-slate-300 md:text-lg">
+                  {paragraph}
+                </p>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+          {
+            about.highlights.map((item) => (
+              <div class="rounded-3xl border border-white/10 bg-slate-900/70 p-6">
+                <p class="text-3xl font-bold text-white">
+                  {item.value}
+                </p>
+
+                <p class="mt-2 text-sm leading-6 text-slate-400">
+                  {item.label}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </Container>
+</section>

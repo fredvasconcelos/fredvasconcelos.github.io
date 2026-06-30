@@ -1,0 +1,297 @@
+---
+import { getCurrentLocale } from '../../i18n/utils';
+import { getSiteConfig } from '../../i18n/site';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+const currentPath = Astro.url.pathname;
+const currentLocale = getCurrentLocale(currentPath);
+const siteConfig = getSiteConfig(currentLocale);
+
+const baseUrl = import.meta.env.BASE_URL;
+
+const labels = {
+  'pt-BR': {
+    home: 'Voltar ao início',
+    mainNav: 'Navegação principal',
+    openMenu: 'Abrir menu',
+  },
+  es: {
+    home: 'Volver al inicio',
+    mainNav: 'Navegación principal',
+    openMenu: 'Abrir menú',
+  },
+  en: {
+    home: 'Back to home',
+    mainNav: 'Main navigation',
+    openMenu: 'Open menu',
+  },
+} as const;
+
+const currentLabels = labels[currentLocale];
+
+const withBasePath = (path: string) => {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const cleanPath = path.replace(/^\//, '');
+
+  return `${cleanBase}${cleanPath}`;
+};
+
+const getSectionId = (href: string) => {
+  if (href === '/' || href.endsWith('/')) return 'inicio';
+
+  const hashIndex = href.indexOf('#');
+
+  if (hashIndex >= 0) {
+    return href.slice(hashIndex + 1);
+  }
+
+  return '';
+};
+
+const isProjectsPage =
+  currentPath.startsWith('/projetos') ||
+  currentPath.startsWith('/es/proyectos') ||
+  currentPath.startsWith('/en/projects');
+---
+
+<header
+  id="site-header"
+  class="fixed left-0 top-0 z-50 w-full border-b border-transparent transition-all duration-300"
+>
+  <div class="mx-auto flex h-24 max-w-6xl items-center justify-between px-6 transition-all duration-300">
+    <a
+      href={withBasePath(siteConfig.nav[0].href)}
+      class="group inline-flex items-center gap-3"
+      aria-label={currentLabels.home}
+    >
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 text-sm font-bold text-cyan-200 shadow-lg shadow-cyan-950/40 transition group-hover:border-cyan-300/60 group-hover:bg-cyan-300/20"
+      >
+        FV
+      </div>
+
+      <div class="hidden leading-tight sm:block">
+        <p class="text-sm font-semibold text-white">
+          {siteConfig.name}
+        </p>
+
+        <p class="text-xs text-slate-400">
+          {siteConfig.title}
+        </p>
+      </div>
+    </a>
+
+    <nav
+      class="hidden items-center gap-2 rounded-full border border-white/10 bg-slate-950/20 p-1 backdrop-blur md:flex"
+      aria-label={currentLabels.mainNav}
+      data-main-nav
+    >
+      {
+        siteConfig.nav.map((item) => {
+          const sectionId = getSectionId(item.href);
+
+          const isInitialActive = isProjectsPage
+            ? sectionId === 'projetos'
+            : sectionId === 'inicio';
+
+          return (
+            <a
+              href={withBasePath(item.href)}
+              data-nav-link
+              data-section={sectionId}
+              class:list={[
+                'rounded-full px-4 py-2 text-sm font-semibold transition duration-300',
+                isInitialActive
+                  ? 'nav-link-active'
+                  : 'text-slate-300 hover:text-cyan-100',
+              ]}
+            >
+              {item.label}
+            </a>
+          );
+        })
+      }
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <LanguageSwitcher />
+
+      <details class="group relative md:hidden">
+        <summary
+          class="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 transition hover:bg-white/10"
+          aria-label={currentLabels.openMenu}
+        >
+          <span class="sr-only">{currentLabels.openMenu}</span>
+
+          <svg
+            class="h-5 w-5 group-open:hidden"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 7h16M4 12h16M4 17h16"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+
+          <svg
+            class="hidden h-5 w-5 group-open:block"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 6l12 12M18 6L6 18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </summary>
+
+        <div
+          class="absolute right-0 mt-4 w-64 overflow-hidden rounded-3xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-slate-950/60 backdrop-blur-xl"
+        >
+          {
+            siteConfig.nav.map((item) => {
+              const sectionId = getSectionId(item.href);
+
+              const isInitialActive = isProjectsPage
+                ? sectionId === 'projetos'
+                : sectionId === 'inicio';
+
+              return (
+                <a
+                  href={withBasePath(item.href)}
+                  data-nav-link
+                  data-section={sectionId}
+                  class:list={[
+                    'block rounded-2xl px-4 py-3 text-sm font-semibold transition duration-300',
+                    isInitialActive
+                      ? 'nav-link-active'
+                      : 'text-slate-300 hover:text-cyan-100',
+                  ]}
+                >
+                  {item.label}
+                </a>
+              );
+            })
+          }
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector('#site-header');
+  const headerInner = header?.querySelector('div');
+  const navLinks = document.querySelectorAll('[data-nav-link]');
+
+  const pathname = window.location.pathname;
+
+  const isProjectsPage =
+    pathname.startsWith('/projetos') ||
+    pathname.startsWith('/es/proyectos') ||
+    pathname.startsWith('/en/projects');
+
+  const setActiveLink = (sectionId) => {
+    navLinks.forEach((link) => {
+      const isActive = link.dataset.section === sectionId;
+
+      link.classList.toggle('nav-link-active', isActive);
+      link.classList.toggle('text-slate-300', !isActive);
+      link.classList.toggle('hover:text-cyan-100', !isActive);
+    });
+  };
+
+  const updateHeader = () => {
+    if (!header || !headerInner) return;
+
+    const isScrolled = window.scrollY > 24;
+
+    header.classList.toggle('border-white/10', isScrolled);
+    header.classList.toggle('bg-slate-950/80', isScrolled);
+    header.classList.toggle('backdrop-blur-xl', isScrolled);
+    header.classList.toggle('shadow-lg', isScrolled);
+    header.classList.toggle('shadow-slate-950/30', isScrolled);
+
+    headerInner.classList.toggle('h-20', isScrolled);
+    headerInner.classList.toggle('h-24', !isScrolled);
+  };
+
+  const updateActiveSection = () => {
+    if (isProjectsPage) {
+      setActiveLink('projetos');
+      return;
+    }
+
+    const sections = [
+      {
+        id: 'inicio',
+        element: document.querySelector('#inicio'),
+      },
+      {
+        id: 'sobre',
+        element: document.querySelector('#sobre'),
+      },
+      {
+        id: 'tecnologias',
+        element: document.querySelector('#tecnologias'),
+      },
+      {
+        id: 'experiencia',
+        element: document.querySelector('#experiencia'),
+      },
+      {
+        id: 'projetos',
+        element: document.querySelector('#projetos'),
+      },
+      {
+        id: 'contato',
+        element: document.querySelector('#contato'),
+      },
+    ].filter((section) => section.element);
+
+    let currentSection = 'inicio';
+
+    sections.forEach((section) => {
+      const rect = section.element.getBoundingClientRect();
+
+      if (rect.top <= window.innerHeight * 0.35) {
+        currentSection = section.id;
+      }
+    });
+
+    setActiveLink(currentSection);
+  };
+
+  const updateAll = () => {
+    updateHeader();
+    updateActiveSection();
+  };
+
+  updateAll();
+
+  window.addEventListener('scroll', updateAll, { passive: true });
+  window.addEventListener('resize', updateAll);
+</script>
+
+<style>
+  .nav-link-active {
+    color: rgb(207, 250, 254);
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid rgba(34, 211, 238, 0.28);
+    box-shadow:
+      0 0 0 1px rgba(34, 211, 238, 0.08),
+      0 0 22px rgba(34, 211, 238, 0.18),
+      inset 0 0 18px rgba(34, 211, 238, 0.08);
+  }
+</style>

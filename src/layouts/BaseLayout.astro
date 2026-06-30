@@ -1,0 +1,152 @@
+---
+import '../styles/assets/global.css';
+
+import { languages, locales } from '../i18n/config';
+import { getCurrentLocale, getLocalizedPath } from '../i18n/utils';
+import { getSiteConfig } from '../i18n/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  noIndex?: boolean;
+}
+
+const currentLocale = getCurrentLocale(Astro.url.pathname);
+const siteConfig = getSiteConfig(currentLocale);
+
+const {
+  title = siteConfig.seo.defaultTitle,
+  description = siteConfig.seo.defaultDescription,
+  image = siteConfig.seo.defaultImage,
+  canonical,
+  noIndex = false,
+} = Astro.props;
+
+const siteName = siteConfig.name;
+const pageTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+
+const baseUrl = import.meta.env.BASE_URL;
+const siteOrigin = Astro.site ?? Astro.url.origin;
+
+const withBasePath = (path: string) => {
+  if (
+    path.startsWith('http://') ||
+    path.startsWith('https://') ||
+    path.startsWith('mailto:')
+  ) {
+    return path;
+  }
+
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const cleanPath = path.replace(/^\//, '');
+
+  return `${cleanBase}${cleanPath}`;
+};
+
+const currentUrl = canonical
+  ? new URL(withBasePath(canonical), siteOrigin).toString()
+  : new URL(withBasePath(Astro.url.pathname), siteOrigin).toString();
+
+const imageUrl = new URL(withBasePath(image), siteOrigin).toString();
+
+const ogLocales = {
+  'pt-BR': 'pt_BR',
+  es: 'es_ES',
+  en: 'en_US',
+} as const;
+
+const skipLabels = {
+  'pt-BR': 'Ir para o conteúdo principal',
+  es: 'Ir al contenido principal',
+  en: 'Skip to main content',
+} as const;
+
+const alternateLinks = locales.map((locale) => {
+  const href = getLocalizedPath(Astro.url.pathname, locale);
+
+  return {
+    locale,
+    href: new URL(withBasePath(href), siteOrigin).toString(),
+    hreflang: languages[locale].code,
+  };
+});
+
+const xDefaultHref = new URL(
+  withBasePath(getLocalizedPath(Astro.url.pathname, 'pt-BR')),
+  siteOrigin,
+).toString();
+---
+
+<!doctype html>
+<html lang={currentLocale} class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+    <link rel="canonical" href={currentUrl} />
+
+    {
+      alternateLinks.map((link) => (
+        <link rel="alternate" hreflang={link.hreflang} href={link.href} />
+      ))
+    }
+
+    <link rel="alternate" hreflang="x-default" href={xDefaultHref} />
+
+    <meta name="author" content={siteConfig.fullName ?? siteConfig.name} />
+    <meta name="theme-color" content="#020617" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:url" content={currentUrl} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={ogLocales[currentLocale]} />
+
+    {
+      locales
+        .filter((locale) => locale !== currentLocale)
+        .map((locale) => (
+          <meta property="og:locale:alternate" content={ogLocales[locale]} />
+        ))
+    }
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+
+    <link rel="icon" type="image/svg+xml" href={withBasePath('/favicon.svg')} />
+
+    <slot name="head" />
+  </head>
+
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <div class="relative min-h-screen overflow-hidden">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(168,85,247,0.12),_transparent_30%),linear-gradient(180deg,_#020617_0%,_#0f172a_45%,_#020617_100%)]"
+      >
+      </div>
+
+      <a
+        href="#conteudo-principal"
+        class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-cyan-400 focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-slate-950"
+      >
+        {skipLabels[currentLocale]}
+      </a>
+
+      <main id="conteudo-principal">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content';
+
+import Container from '../ui/Container.astro';
+import SectionTitle from '../ui/SectionTitle.astro';
+import Button from '../ui/Button.astro';
+import ProjectCard from '../projects/ProjectCard.astro';
+
+import { getCurrentLocale } from '../../i18n/utils';
+import { getSiteConfig } from '../../i18n/site';
+
+import {
+  getProjectHref,
+  getProjectsPageHref,
+  getProjectSlugFromId,
+  projectBelongsToLocale,
+} from '../../utils/projects';
+
+const currentLocale = getCurrentLocale(Astro.url.pathname);
+const siteConfig = getSiteConfig(currentLocale);
+const projectsConfig = siteConfig.projects;
+
+const projects = await getCollection('projects');
+
+const featuredProjects = projects
+  .filter((project) => projectBelongsToLocale(project.id, currentLocale))
+  .filter((project) => project.data.featured === true)
+  .filter((project) => project.data.draft !== true)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+---
+
+<section id="projetos" class="border-t border-white/10 py-24 md:py-32">
+  <Container>
+    <div class="mb-14 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <SectionTitle
+        eyebrow={projectsConfig.eyebrow}
+        title={projectsConfig.title}
+        description={projectsConfig.description}
+      />
+
+      <Button href={getProjectsPageHref(currentLocale)} variant="secondary">
+        {projectsConfig.viewAllLabel}
+      </Button>
+    </div>
+
+    {
+      featuredProjects.length > 0 ? (
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {
+            featuredProjects.map((project) => {
+              const slug = getProjectSlugFromId(project.id);
+
+              return (
+                <ProjectCard
+                  title={project.data.title}
+                  description={project.data.description}
+                  href={getProjectHref(slug, currentLocale)}
+                  category={project.data.category}
+                  stack={project.data.stack}
+                  date={project.data.date}
+                  image={project.data.image}
+                  locale={projectsConfig.dateLocale}
+                  readMoreLabel={projectsConfig.readMoreLabel}
+                  imageAltPrefix={projectsConfig.imageAltPrefix}
+                  fallbackLabel={projectsConfig.fallbackLabel}
+                />
+              );
+            })
+          }
+        </div>
+      ) : (
+        <div class="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-slate-300">
+          {projectsConfig.emptyMessage}
+        </div>
+      )
+    }
+  </Container>
+</section>
