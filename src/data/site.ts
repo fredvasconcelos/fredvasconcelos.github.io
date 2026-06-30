@@ -85,6 +85,6 @@ export const siteConfig = {
     defaultTitle: "Fred Vasconcelos | BI Analyst & Data Engineer",
     defaultDescription:
       "Portfolio profissional de Fred Vasconcelos com projetos de BI, Power BI, Azure Databricks, PySpark, SQL, Python e engenharia de dados.",
-    defaultImage: "/foto_profissional_2.jpg",
+    defaultImage: "/foto_fundo_branco.png",
   },
 } as const;

@@ -323,7 +323,7 @@ export const siteDictionary = {
       defaultTitle: "Fred Vasconcelos | BI Analyst & Data Engineer",
       defaultDescription:
         "Portfolio profissional de Fred Vasconcelos com projetos de BI, Power BI, Azure Databricks, PySpark, SQL, Python e engenharia de dados.",
-      defaultImage: "/foto_profissional_2.jpeg",
+      defaultImage: "/foto_fundo_branco.png",
     },
   },
 
@@ -650,7 +650,7 @@ export const siteDictionary = {
       defaultTitle: "Fred Vasconcelos | Analista BI & Data Engineer",
       defaultDescription:
         "Portfolio de proyectos de Business Intelligence, ingeniería de datos, dashboards ejecutivos y soluciones analíticas end-to-end.",
-      defaultImage: "/foto_profissional_2.jpeg",
+      defaultImage: "/foto_fundo_branco.png",
     },
   },
 
@@ -977,7 +977,7 @@ export const siteDictionary = {
       defaultTitle: "Fred Vasconcelos | BI Analyst & Data Engineer",
       defaultDescription:
         "Portfolio of Business Intelligence, data engineering, executive dashboards, and end-to-end analytics solutions.",
-      defaultImage: "/foto_profissional_2.jpeg",
+      defaultImage: "/foto_fundo_branco.png",
     },
   },
 } as const;
